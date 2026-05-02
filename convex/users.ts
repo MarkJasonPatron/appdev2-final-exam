@@ -17,15 +17,11 @@ export const login = mutation({
         }
 
         const passwordCorrect = bcrypt.compareSync(args.password, user.password)
-
         if (!passwordCorrect) {
             return { success: false, message: "Invalid credentials!" }
         }
 
-        return {
-            success: true,
-            userId: user._id
-        }
+        return { success: true, userId: user._id }
     }
 })
 
@@ -33,20 +29,19 @@ export const register = mutation({
     args: {
         username: v.string(),
         password: v.string(),
-        fullname: v.string() // <-- Added this to expect the fullname
+        fullname: v.string() 
     },
     handler: async (ctx, args) => {
-        const user = await ctx.db.query("users")
+        const existingUser = await ctx.db.query("users")
             .filter((q) => q.eq(q.field("username"), args.username))
             .unique();
 
-        if (user) {
+        if (existingUser) {
             return { success: false, message: "User already exists!" }
         }
 
         const hashedPassword = bcrypt.hashSync(args.password, 10);
-
-        const userId = ctx.db.insert("users", {
+        const userId = await ctx.db.insert("users", {
             username: args.username,
             password: hashedPassword,
             fullname: args.fullname 

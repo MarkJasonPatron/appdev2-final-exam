@@ -22,16 +22,19 @@ export default function App() {
     <ConvexProvider client={convex}>
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
-          {/* If not logged in, show Login and Signup flow */}
           {!userId ? (
             <>
               <Stack.Screen name="Login">
-                {(props) => <LoginScreen {...props} onLogin={(id: Id<"users">) => setUserId(id)} />}
+                {(props) => (
+                  <LoginScreen 
+                    {...props} 
+                    onLogin={(id: Id<"users">) => setUserId(id)} 
+                  />
+                )}
               </Stack.Screen>
               <Stack.Screen name="Signup" component={SignupScreen} />
             </>
           ) : (
-            /* If logged in, show the Todo list */
             <Stack.Screen name="Todo">
               {(props) => <TodoScreen {...props} userId={userId} />}
             </Stack.Screen>
