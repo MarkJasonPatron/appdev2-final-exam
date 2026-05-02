@@ -3,6 +3,14 @@ import { mutation } from "./_generated/server";
 export const seed = mutation({
   args: {},
   handler: async (ctx) => {
+    // 1. Fetch the first existing user from the database
+    const user = await ctx.db.query("users").first();
+
+    // 2. Safeguard: Make sure a user actually exists before seeding
+    if (!user) {
+      return "Failed: No users exist yet! Please register a user in the app first.";
+    }
+
     const initialTasks = [
       "Buy groceries",
       "Finish React Native tutorial",
@@ -17,9 +25,11 @@ export const seed = mutation({
     ];
 
     for (const taskText of initialTasks) {
+      // 3. Insert the task with the valid userId attached
       await ctx.db.insert("todos", {
         text: taskText,
-        isCompleted: Math.random() > 0.7, // Randomly mark some as completed
+        isCompleted: Math.random() > 0.7,
+        userId: user._id, // <-- This fixes your error!
       });
     }
     
