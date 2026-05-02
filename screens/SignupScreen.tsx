@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -6,14 +6,49 @@ import {
   Image,
   TouchableOpacity,
   TextInput,
+  Alert,
 } from "react-native";
 import Ionicons from "@react-native-vector-icons/ionicons";
+import { useNavigation } from "@react-navigation/native";
+import { useMutation } from "convex/react";
+import { api } from "../convex/_generated/api";
 
 export default function SignupScreen() {
-  // Added state to capture user inputs for the database
+  // Navigation hook to handle screen transitions
+  const navigation = useNavigation<any>();
+
+  // State for form inputs
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  // Convex mutation for user registration
+  const register = useMutation(api.users.register);
+
+  const handleSignup = async () => {
+    // Basic validation
+    if (!fullName || !email || !password) {
+      Alert.alert("Error", "Please fill in all fields.");
+      return;
+    }
+
+    try {
+      const result = await register({
+        username: email, // Mapping email to username per project logic
+        password: password,
+        fullname: fullName,
+      });
+
+      if (result) {
+        Alert.alert("Success", "Account created successfully!");
+        // Navigate back to Login after successful registration
+        navigation.navigate("Login");
+      }
+    } catch (error) {
+      Alert.alert("Error", "Registration failed. Email might already be taken.");
+      console.error(error);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -27,7 +62,6 @@ export default function SignupScreen() {
 
       {/* Form Container */}
       <View style={styles.formContainer}>
-        {/* Name Input */}
         <Text style={styles.label}>Full Name</Text>
         <TextInput
           style={styles.input}
@@ -36,7 +70,6 @@ export default function SignupScreen() {
           onChangeText={setFullName}
         />
 
-        {/* Email Input (Acts as Username) */}
         <Text style={styles.label}>Email Address</Text>
         <TextInput
           style={styles.input}
@@ -47,7 +80,6 @@ export default function SignupScreen() {
           onChangeText={setEmail}
         />
 
-        {/* Password Input */}
         <Text style={styles.label}>Password</Text>
         <TextInput
           style={styles.input}
@@ -57,15 +89,14 @@ export default function SignupScreen() {
           onChangeText={setPassword}
         />
 
-        {/* Signup Button */}
-        <TouchableOpacity style={styles.loginButton}>
+        {/* Signup Action */}
+        <TouchableOpacity style={styles.loginButton} onPress={handleSignup}>
           <Text style={styles.loginButtonText}>Sign Up</Text>
         </TouchableOpacity>
 
-        {/* OR Separator */}
         <Text style={styles.orText}>Or</Text>
 
-        {/* Social Login Icons */}
+        {/* Social Login Row */}
         <View style={styles.socialRow}>
           <TouchableOpacity style={styles.socialIcon}>
             <Ionicons name="logo-google" size={30} color="#DB4437" />
@@ -78,10 +109,10 @@ export default function SignupScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Footer Signup Link */}
+        {/* Navigation back to Login */}
         <View style={styles.footer}>
-          <Text>Already have an account?  </Text>
-          <TouchableOpacity>
+          <Text>Already have an account? </Text>
+          <TouchableOpacity onPress={() => navigation.navigate("Login")}>
             <Text style={styles.linkText}>Log In</Text>
           </TouchableOpacity>
         </View>
@@ -124,11 +155,6 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 15,
     fontSize: 16,
-  },
-  forgotText: {
-    textAlign: "right",
-    marginTop: 10,
-    color: "#666",
   },
   loginButton: {
     backgroundColor: "#FFCC00",
